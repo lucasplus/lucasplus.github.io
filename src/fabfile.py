@@ -3,7 +3,7 @@ import fabric.contrib.project as project
 import os
 import shutil
 import sys
-import SocketServer
+import socketserver
 
 from pelican.server import ComplexHTTPRequestHandler
 
@@ -14,15 +14,9 @@ DEPLOY_PATH = env.deploy_path
 # Port for `serve`
 PORT = 8000
 
-def clean():
-    """Remove generated files"""
-    if os.path.isdir(DEPLOY_PATH):
-        shutil.rmtree(DEPLOY_PATH)
-        os.makedirs(DEPLOY_PATH)
-
 def build():
     """Build local version of site"""
-    local('pelican -s pelicanconf.py')
+    local('pelican -o {} -s pelicanconf.py'.format(env.deploy_path))
 
 def rebuild():
     """`clean` then `build`"""
@@ -31,13 +25,13 @@ def rebuild():
 
 def regenerate():
     """Automatically regenerate site upon file modification"""
-    local('pelican -r -s pelicanconf.py')
+    local('pelican -o {} -r -s pelicanconf.py'.format(env.deploy_path))
 
 def serve():
     """Serve site at http://localhost:8000/"""
     os.chdir(env.deploy_path)
 
-    class AddressReuseTCPServer(SocketServer.TCPServer):
+    class AddressReuseTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
 
     server = AddressReuseTCPServer(('', PORT), ComplexHTTPRequestHandler)
@@ -52,4 +46,4 @@ def reserve():
 
 def preview():
     """Build production version of site"""
-    local('pelican -s publishconf.py')
+    local('pelican -o {} -s publishconf.py'.format(env.deploy_path))
